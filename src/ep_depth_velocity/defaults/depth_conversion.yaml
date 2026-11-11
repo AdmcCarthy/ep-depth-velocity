@@ -1,0 +1,65 @@
+# Depth conversion by layers (marts depth_model_*, notebook 46, docs/depth_conversion.md).  Source-specific names (the Volve pick names) are in this file, not in core code.
+# Depth is below mean sea level (positive down); the layer models use depth and ONE-WAY time below the top of each layer (V0 is the velocity at the layer top).
+
+water_velocity_m_s: 1480.0        # ASSUMPTION: the seawater velocity used for the time of the seabed (2 z / v); the picks' seabed times do not follow the water depth (DQ-150)
+min_thickness_m: 5.0              # a layer observation thinner than this, or with a non-positive time, is skipped
+min_wells: 6                      # a layer or model is judged only with at least this many wells
+k_grid: [-0.3, 1.5, 61]           # ASSUMPTION: k [1/s] searched from -0.3 to 1.5 in 61 steps (min, max, count); the leave-one-well-out RMS decides
+min_improvement: 0.10             # ASSUMPTION: the mode 'auto' uses V0-k below a layer only when it lowers the leave-one-well-out RMS by at least 10 % against a constant velocity (parsimony: below BCU a simpler model is preferred)
+horizon_max_distance_m: 30.0      # a horizon time is read at the well only when a node lies within this distance (as in the horizon check)
+
+schemes:
+  # Sodir groups, the picks' own two-way times: a boundary is the shallowest available pick of the group (the group names are the Sodir lexicon's; Ty Fm stands for the top of the Rogaland Group, Draupne or Heather for the base of the Cretaceous = BCU)
+  group:
+    boundaries:
+      - {name: seabed,       group: NORDLAND GP,  surfaces: [Seabed],                                       time: water}
+      - {name: hordaland,    group: HORDALAND GP, surfaces: [HORDALAND GP. Top],                            time: pick}
+      - {name: rogaland,     group: ROGALAND GP,  surfaces: [Ty Fm. Top],                                   time: pick}
+      - {name: shetland,     group: SHETLAND GP,  surfaces: [SHETLAND GP. Top, Ekofisk Fm. Top],            time: pick}
+      - {name: bcu,          group: VIKING GP,    surfaces: [Draupne Fm. Top, Heather Fm. Top],           time: pick}
+      - {name: hugin_top,    group: VESTLAND GP,  surfaces: [Hugin Fm. VOLVE Top, Sleipner Fm. Top],       time: pick}
+      - {name: hugin_base,   group: VESTLAND GP,  surfaces: [Hugin Fm. VOLVE Base],                        time: pick}
+    above_bcu:
+      direct: [[seabed, bcu]]
+      cake:   [[seabed, hordaland], [hordaland, rogaland], [rogaland, shetland], [shetland, bcu]]
+    below_bcu:
+      to_hugin_top:  {block: [[bcu, hugin_top]], layered: [[bcu, hugin_top]]}
+      to_hugin_base: {block: [[bcu, hugin_base]], layered: [[bcu, hugin_top], [hugin_top, hugin_base]]}
+  # The same layers from the seismic times: the two-way time is that of the interpreted horizon at the well (one volume, one interpretation), the depth is the well pick.  Hordaland has no horizon: its layer is part of Seabed -> Ty.
+  horizon:
+    boundaries:
+      - {name: seabed,       group: NORDLAND GP,  surfaces: [Seabed],                                       time: water}
+      - {name: rogaland,     group: ROGALAND GP,  surfaces: [Ty Fm. Top],                                   time: horizon, horizon: "Ty_Fm_Top+ST10010_Full"}
+      - {name: shetland,     group: SHETLAND GP,  surfaces: [SHETLAND GP. Top, Ekofisk Fm. Top],            time: horizon, horizon: "SHETLAND_GP_Top+ST10010ZC11_Full"}
+      - {name: bcu,          group: VIKING GP,    surfaces: [Draupne Fm. Top, Heather Fm. Top],           time: horizon, horizon: "BCU+ST10010ZC11_Full"}
+      - {name: hugin_top,    group: VESTLAND GP,  surfaces: [Hugin Fm. VOLVE Top, Sleipner Fm. Top],       time: horizon, horizon: "Hugin_Fm_Top+ST10010ZC11_Near"}
+      - {name: hugin_base,   group: VESTLAND GP,  surfaces: [Hugin Fm. VOLVE Base],                        time: horizon, horizon: "Hugin_Fm_Base+ST10010ZC11_Near"}
+    above_bcu:
+      direct: [[seabed, bcu]]
+      cake:   [[seabed, rogaland], [rogaland, shetland], [shetland, bcu]]
+    below_bcu:
+      to_hugin_top:  {block: [[bcu, hugin_top]], layered: [[bcu, hugin_top]]}
+      to_hugin_base: {block: [[bcu, hugin_base]], layered: [[bcu, hugin_top], [hugin_top, hugin_base]]}
+
+# the modes evaluated: above BCU (a single function from the seabed, or the layer-cake) and below BCU (constant velocity, V0-k, or 'auto')
+above_modes: [const, v0k]
+below_modes: [const, v0k, auto]
+
+bcu_check:                         # the BCU of the seismic horizons against the Draupne / Heather top that stands for it at the wells
+  time: "BCU+ST10010ZC11_Full"
+  depth: "BCU+ST10010ZC11_NoF10"
+
+# V0 map from the wells (marts v0_map_*, notebook 48)
+v0_map:
+  methods: [area, plane, idw, krige, plane_krige]
+  group_distance_m: 300.0                 # ASSUMPTION: wellbores within 300 m (chained) are one slot and are left out together
+  min_wells_map: 8                        # fewer training wells than this: every method falls back to the median
+  clip_fraction: 0.5                      # a prediction stays within the training range widened by half of its spread
+  krige_ranges_m: [1500.0, 3000.0, 6000.0]  # ASSUMPTION: candidate ranges of the exponential covariance (practical range); chosen by predicting the training wells from each other
+  nugget_fraction: 0.2                    # ASSUMPTION: share of the variance that is noise (the velocity of a well is not exact: pick times, tops)
+  layers:                                 # layer -> mode of k (above the BCU V0-k, below a constant velocity)
+    "seabed -> bcu": v0k
+    "bcu -> hugin_top": const
+    "bcu -> hugin_base": const
+  cell_m: 250.0
+  field_buffer_m: 1000.0                  # the 'field' well set: wells whose position lies inside the extent of the team's BCU horizon widened by 1 km
