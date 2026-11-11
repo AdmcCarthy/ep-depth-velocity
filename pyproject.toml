@@ -1,6 +1,6 @@
 [project]
 name = "ep-depth-velocity"
-version = "0.1.0"
+version = "1.0.0"
 description = "V0-k and layer-cake depth conversion, V0 maps, time-depth tables, check-shot and sonic drift."
 readme = "README.md"
 license = { file = "LICENSE" }
