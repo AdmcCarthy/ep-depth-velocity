@@ -4,7 +4,7 @@
 
 ## Decisions (Adam, 2026-11-11)
 * Domain libraries, one per topic; this one is `ep-depth-velocity`. Figures belong to their domain.
-* Private until the publication gate passes; built public-ready. Licence MIT with acknowledgement.
+* Built public-ready; made public on 2026-11-11 after the gate passed (0 blockers). Licence MIT with acknowledgement.
 * One-way design: the library never imports a knowledge store; assumptions travel as packaged defaults with a level, a one-line basis and an author-and-year citation where there is one.
 * The hydrocarbon colours of the Sodir Geostandard are used as they are.
 
@@ -19,4 +19,4 @@
 
 ## Next steps
 * Add the knowledge identifiers used here to `KNOWLEDGE.md` and export the defaults from the knowledge store.
-* Run `scripts/publication_gate.py` and clear the warnings before publishing.
+* Keep `scripts/publication_gate.py` at zero blockers (it runs in CI); read the warnings (Sodir, NPD, Equinor Design System names) when adding documents.
