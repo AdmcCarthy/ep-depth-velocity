@@ -41,9 +41,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ep-physics-base", git = "https://github.com/AdmcCarthy/ep-physics-base?tag=v0.1.0" },
-    { name = "ep-seismic", git = "https://github.com/AdmcCarthy/ep-seismic?tag=v0.1.0" },
-    { name = "ep-wellbore", git = "https://github.com/AdmcCarthy/ep-wellbore?tag=v0.1.0" },
+    { name = "ep-physics-base", git = "https://github.com/AdmcCarthy/ep-physics-base" },
+    { name = "ep-seismic", git = "https://github.com/AdmcCarthy/ep-seismic" },
+    { name = "ep-wellbore", git = "https://github.com/AdmcCarthy/ep-wellbore" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyyaml" },
@@ -59,7 +59,7 @@ dev = [
 [[package]]
 name = "ep-physics-base"
 version = "0.1.0"
-source = { git = "https://github.com/AdmcCarthy/ep-physics-base?tag=v0.1.0#6cd2fb78ca3a48d591d266f6f61bde5764679683" }
+source = { git = "https://github.com/AdmcCarthy/ep-physics-base#6cd2fb78ca3a48d591d266f6f61bde5764679683" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
@@ -69,7 +69,7 @@ dependencies = [
 [[package]]
 name = "ep-seismic"
 version = "0.1.0"
-source = { git = "https://github.com/AdmcCarthy/ep-seismic?tag=v0.1.0#037fa96c03a8313a4b104f06487a19dad613ab11" }
+source = { git = "https://github.com/AdmcCarthy/ep-seismic#a69db921b35180b0bca684f85e38bcd8fdae3da4" }
 dependencies = [
     { name = "ep-physics-base" },
     { name = "numpy" },
@@ -82,7 +82,7 @@ dependencies = [
 [[package]]
 name = "ep-wellbore"
 version = "0.1.0"
-source = { git = "https://github.com/AdmcCarthy/ep-wellbore?tag=v0.1.0#b89f2700b82d8d314b396ef64903bbfdb01c2d1a" }
+source = { git = "https://github.com/AdmcCarthy/ep-wellbore#6b52276c1cc0f12f4275f2f706c8a525806ed24b" }
 dependencies = [
     { name = "ep-physics-base" },
     { name = "numpy" },
