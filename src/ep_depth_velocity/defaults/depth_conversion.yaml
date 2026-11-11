@@ -1,7 +1,7 @@
-# Depth conversion by layers (marts depth_model_*, notebook 46, docs/depth_conversion.md).  Source-specific names (the Volve pick names) are in this file, not in core code.
+# Depth conversion by layers (marts depth_model_*, the analysis notebooks, docs/depth_conversion.md).  Source-specific names (the Volve pick names) are in this file, not in core code.
 # Depth is below mean sea level (positive down); the layer models use depth and ONE-WAY time below the top of each layer (V0 is the velocity at the layer top).
 
-water_velocity_m_s: 1480.0        # ASSUMPTION: the seawater velocity used for the time of the seabed (2 z / v); the picks' seabed times do not follow the water depth (DQ-150)
+water_velocity_m_s: 1480.0        # ASSUMPTION: the seawater velocity used for the time of the seabed (2 z / v); the picks' seabed times do not follow the water depth
 min_thickness_m: 5.0              # a layer observation thinner than this, or with a non-positive time, is skipped
 min_wells: 6                      # a layer or model is judged only with at least this many wells
 k_grid: [-0.3, 1.5, 61]           # ASSUMPTION: k [1/s] searched from -0.3 to 1.5 in 61 steps (min, max, count); the leave-one-well-out RMS decides
@@ -49,7 +49,7 @@ bcu_check:                         # the BCU of the seismic horizons against the
   time: "BCU+ST10010ZC11_Full"
   depth: "BCU+ST10010ZC11_NoF10"
 
-# V0 map from the wells (marts v0_map_*, notebook 48)
+# V0 map from the wells (marts v0_map_*, the analysis notebooks)
 v0_map:
   methods: [area, plane, idw, krige, plane_krige]
   group_distance_m: 300.0                 # ASSUMPTION: wellbores within 300 m (chained) are one slot and are left out together

@@ -1,6 +1,6 @@
 # Depth conversion: concepts, methods and a first look at the Volve data
 
-Review of 2026-11-09 (`src/processing/depth_conversion.py`, `scripts/depth_conversion_review.py`, primer `depth_conversion`, requests 130-132). The web material is search summaries only, none of it read in full; the Volve numbers are computed by the script and are exploratory (no mart, no notebook yet).
+Review of 2026-11-09 (`depth_conversion`, `scripts/depth_conversion_review.py`, primer `depth_conversion`, requests 130-132). The web material is search summaries only, none of it read in full; the Volve numbers are computed by the script and are exploratory (no mart, no notebook yet).
 
 ## 1 What depth conversion is used for
 
@@ -44,9 +44,9 @@ For the zone between two consecutive tops of a well, `zone_interval_velocities` 
 | Interval velocity of zones (wells, median, MAD) | Nordland-Utsira 1940 (10, 58); Utsira-Hordaland 2074 (19, 30); Hordaland-Ty 2219 (14, 31); Ty-Shetland 3131 (23, 125); Ekofisk-Hod 4422 (25, 101); Hod-Draupne 4082 (27, 231); Draupne-Heather 2766 (13, 92); Hugin top-base 3704 (11, 372); Skagerrak-Smith Bank 3869 (8, 205) m/s |
 | Per node, between the team's horizons | Ty-Shetland 2921 (5-95 %: 2667-3289); Shetland-Hugin top 3880; Hugin top-base 3581 (2898-4663); Shetland-BCU 4453 m/s |
 | Flags | 17 of 193 zone intervals beyond 3 robust standard deviations; the largest: Ty-Shetland of 15/9-F-11 B (5308 m/s) and F-15 D (5426) against 3131; Utsira-Hordaland of 15/9-F-7 (1707, z = -8) and Ekofisk-Hod low in four F-wells (3.7-4.0 km/s) and high in 15/9-4 and F-11 T2 |
-| A data problem the check exposes | the Utsira top has the same depth (827.7 m) in the four wellbores of the F-1 slot but a two-way time of 792 to 905 ms: the pick times are not from one model or one datum (DQ-149) |
+| A data problem the check exposes | the Utsira top has the same depth (827.7 m) in the four wellbores of the F-1 slot but a two-way time of 792 to 905 ms: the pick times are not from one model or one datum |
 
-The picks' times have no stated origin (they agree to 0 ms with the check shot in F-15 A and differ from it by tens of ms elsewhere, notebook 29); the flags therefore mix velocity, pick-time and top problems. Thin zones (a 40 m Draupne-Heather) carry little time. The picks are not independent of the horizons (one interpretation team).
+The picks' times have no stated origin (they agree to 0 ms with the check shot in F-15 A and differ from it by tens of ms elsewhere, the analysis notebooks); the flags therefore mix velocity, pick-time and top problems. Thin zones (a 40 m Draupne-Heather) carry little time. The picks are not independent of the horizons (one interpretation team).
 
 ## 6 What is missing, and a proposed build
 
@@ -55,9 +55,9 @@ The picks' times have no stated origin (they agree to 0 ms with the check shot i
 3. A **consistency check of the picks' two-way times** against the check shots and the calibrated tables per well, since the interval velocity cannot tell a wrong time from a wrong depth.
 4. For a seismic depth display (a volume): a velocity cube or a TDR per trace is needed; none is delivered, so a display would rest on the modelled layer-cake and says so.
 
-Decisions for Adam: the datum (sea level or seabed), the layers (Sodir groups or the picks' formations), whether the chalk is a layer of its own, and the flag limits.
+Decisions for the maintainer: the datum (sea level or seabed), the layers (Sodir groups or the picks' formations), whether the chalk is a layer of its own, and the flag limits.
 
-## 7 Layer-cake models by Sodir group, seabed to BCU, and below the BCU (built 2026-11-09; `src/processing/layer_cake.py`, `config/depth_conversion.yaml`, marts `depth_model_*`, notebook 46)
+## 7 Layer-cake models by Sodir group, seabed to BCU, and below the BCU (built 2026-11-09; `layer_cake`, `config/depth_conversion.yaml`, marts `depth_model_*`, the analysis notebooks)
 
 **Method.** Each layer between two boundaries has a constant interval velocity or a V0-k function with V0 at the layer top. Boundaries are the shallowest available pick of a Sodir group in the well (Nordland from the seabed, Hordaland, Rogaland by the Ty Fm, Shetland by the Shetland GP or Ekofisk top, Viking by the Draupne or Heather top = the BCU proxy, Vestland by the Hugin); the group of each pick formation is the Sodir lexicon's. Two time sources: the picks' own two-way times and the two-way times of the seismic horizons at the wells; the seabed time is 2 z / 1480 m/s (assumed; the picks' seabed times are a median 25 ms off, DQ-150). For a trial k the V0 of each well is solved exactly from its own thickness and one-way time below the layer top; a held-out well is predicted with the median V0 of the others (one area value: no kriging) and its own time; k is the smallest leave-one-well-out RMS, chosen again inside every training set (nested). Modes: `const` (k = 0), `v0k`, `auto` (V0-k only if it lowers the RMS by 10 %). Chains: ABOVE the BCU (one function from the seabed, or the layer-cake), BELOW (a block from the BCU to the target, or one layer per group), and FULL to the top and base of the Hugin, always on the same wells; differences are paired bootstrap intervals over wells (a difference whose 90 % interval contains zero is 'not distinguishable'). A best k at the edge of the searched grid (-0.3 to 1.5 1/s) is no optimum and is not called identifiable.
 
@@ -69,7 +69,7 @@ Decisions for Adam: the datum (sea level or seabed), the layers (Sodir groups or
 
 **Limits.** One area V0 per layer (no map, no kriging, no uncertainty map); the BCU is a proxy at the wells (its horizon differs from the proxy by a median -0.2 m but up to -74 m); 7 to 27 wells; the depth horizons of the interpretation team are not compared; no seismic depth display is made (no velocity cube).
 
-## 8 The team's depth conversion read from their horizons (built 2026-11-09; `src/processing/team_depth.py`, `config/team_depth.yaml`, marts `team_depth_*`, notebook 47)
+## 8 The team's depth conversion read from their horizons (built 2026-11-09; `team_depth`, `config/team_depth.yaml`, marts `team_depth_*`, the analysis notebooks)
 
 **Can it be reverse engineered?** Partly. The archive holds the team's horizons in time AND in depth on one grid (Ty, Shetland, BCU, Hugin top and base, and a seabed), so every node has a time and a depth of the same surface and the depth conversion can be described from its result. The velocity cube, the well adjustment, any smoothing and a report are not delivered, so what is recovered is **a model that reproduces their depths, not their method**. The depth file names carry the words `unadj` (Shetland), `adj`, `adj2`, `updateF11wells`, `EasyDC`; they are listed and not interpreted. The Hugin time horizons are on the near stack, the others on the full stack.
 
@@ -85,12 +85,12 @@ Decisions for Adam: the datum (sea level or seabed), the layers (Sodir groups or
 | Hugin top to base | 3583 m/s | no simple relation (9.3 m for a constant velocity) |
 
 * No single function of time holds the depths: one common depth-time curve leaves 12-31 m per horizon, and a V0-k function fitted to each node from sea level leaves 6-19 m with a systematic pattern by horizon; V0 of that fit varies between nodes (inter-quartile range 1069-1240 m/s, k about 0.9), a lateral variation of about 15 %.
-* A model calibrated to the WELLS (horizon times: V0 1818 m/s, k 0.36 from the seabed to the BCU, a constant 2602-2834 m/s below, notebook 46) applied to the team's time horizons differs from their depths by -1.6 m (BCU), -6.7 m (Hugin top) and -11.0 m (Hugin base) on average, RMS 13, 14 and 17 m; a plane in x and y explains 33-43 % of the difference (east +2.6 to +2.9, north -3.8 to -4.6 m per km): their depths carry a lateral velocity trend that one area V0 does not. The two routes agree to about 0.5 % of the depth.
+* A model calibrated to the WELLS (horizon times: V0 1818 m/s, k 0.36 from the seabed to the BCU, a constant 2602-2834 m/s below, the analysis notebooks) applied to the team's time horizons differs from their depths by -1.6 m (BCU), -6.7 m (Hugin top) and -11.0 m (Hugin base) on average, RMS 13, 14 and 17 m; a plane in x and y explains 33-43 % of the difference (east +2.6 to +2.9, north -3.8 to -4.6 m per km): their depths carry a lateral velocity trend that one area V0 does not. The two routes agree to about 0.5 % of the depth.
 * At the well picks the team's depth horizons leave an RMS of 26 m (Ty), 22 (Shetland), 23 (Hugin top) and 38 m (Hugin base), in-sample (adjusted); the layer-cake of the wells predicts each well without using it to 27 m (top) and 25 m (base).
 
 **What the data suggest, and what they do not show.** The BCU to Hugin top interval is a constant velocity to 3 m and the seabed to BCU interval a V0-k function to 13 m, which matches the practice of one function above the BCU and a simple constant velocity below it. The intermediate layers (Ty, Shetland) have velocities that fall with thickness; one possible reading, which these data do not show, is that they carry the residual of one function applied from the seabed to the BCU. Two different methods can give the same depths over this area, and a model that reproduces them to 13 m is not their model.
 
-## 9 A V0 map from the wells (built 2026-11-09; `src/processing/v0_map.py`, `config/depth_conversion.yaml` `v0_map`, marts `v0_map_*`, notebook 48)
+## 9 A V0 map from the wells (built 2026-11-09; `v0_map`, `config/depth_conversion.yaml` `v0_map`, marts `v0_map_*`, the analysis notebooks)
 
 **Method.** Each well gives V0 for a layer (solved exactly from its thickness and one-way time at a given k); a map is a function of easting and northing fitted to those values: `area` (the median, no map), `plane`, `idw`, `krige` (ordinary kriging, exponential covariance, range chosen on the training wells, nugget 20 %) and `plane_krige`. Wells of a slot share their velocity, so the evaluation **leaves out whole groups** of wells within 300 m (chained), fits the map on the rest and predicts the thickness with the held-out well's own time (k chosen inside each training set); a map is 'closer than area' only when the 90 % paired bootstrap interval over groups excludes zero. The map is also applied to the team's time horizons and compared with their depths.
 
